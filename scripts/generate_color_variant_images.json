@@ -1,0 +1,29 @@
+  "results": [
+    {
+      "input": "Product: Weekly Planner Bundle (7-day layout with time blocks, habit tracker). Color: White - clean white design with minimal black text and thin black lines. File ID: weekly-planner-white",
+      "output": {
+        "file_id": "weekly-planner-white",
+        "image_file": "/home/ubuntu/image_file/0_japWpPuWF2b5XreRCiv5AH_1774503658337_na1fn_L2hvbWUvdWJ1bnR1L3dlZWtseS1wbGFubmVyLXdoaXRl.png",
+        "product_id": "weekly-planner",
+        "color_id": "white"
+      },
+      "error": ""
+    },
+    {
+      "input": "Product: Weekly Planner Bundle (7-day layout with time blocks, habit tracker). Color: Cream - warm cream/ivory background with soft brown accents and warm typography. File ID: weekly-planner-cream",
+      "output": {
+        "file_id": "weekly-planner-cream",
+        "image_file": "/home/ubuntu/image_file/1_KmdBp2c7dMEYK6OdM4OOr9_1774503560721_na1fn_L2hvbWUvdWJ1bnR1L3dlZWtseS1wbGFubmVyLWNyZWFt.png",
+        "product_id": "weekly-planner",
+        "color_id": "cream"
+      },
+      "error": ""
+    },
+    {
+      "input": "Product: Weekly Planner Bundle (7-day layout with time blocks, habit tracker). Color: Sage green - sage green headers and accent bars with white background. File ID: weekly-planner-sage",
+      "output": {
+        "file_id": "weekly-planner-sage",
+        "image_file": "/home/ubuntu/image_file/2_lwbYKrziB38NELfvSsjL2i_1774503559293_na1fn_L2hvbWUvdWJ1bnR1L3dlZWtseS1wbGFubmVyLXNhZ2U.png",
+        "product_id": "weekly-planner",
+        "color_id": "sage"
+      },

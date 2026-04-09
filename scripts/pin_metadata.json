@@ -1,0 +1,155 @@
+[
+  {
+    "id": "weekly-planner",
+    "name": "Weekly Planner Bundle",
+    "board": "Printable Planners",
+    "price": "$7.99",
+    "tagline": "Stay organized all week long",
+    "hashtags": "#weeklyplanner #printableplanner #organizationhacks #plannerlife",
+    "path": "/home/ubuntu/pinterest_pins/images/pin_weekly-planner.jpg"
+  },
+  {
+    "id": "budget-planner",
+    "name": "Budget Planner Spreadsheet",
+    "board": "Printable Planners",
+    "price": "$9.99",
+    "tagline": "Take control of your finances",
+    "hashtags": "#budgetplanner #financeplanning #savemoney #budgeting",
+    "path": "/home/ubuntu/pinterest_pins/images/pin_budget-planner.jpg"
+  },
+  {
+    "id": "habit-tracker",
+    "name": "Habit Tracker \u2014 30 Day",
+    "board": "Printable Planners",
+    "price": "$4.99",
+    "tagline": "Build better habits in 30 days",
+    "hashtags": "#habittracker #habitchallenge #selfimprovement #dailyroutine",
+    "path": "/home/ubuntu/pinterest_pins/images/pin_habit-tracker.jpg"
+  },
+  {
+    "id": "goal-workbook",
+    "name": "Goal Setting Workbook",
+    "board": "Printable Planners",
+    "price": "$12.99",
+    "tagline": "Turn your dreams into reality",
+    "hashtags": "#goalsetting #goalworkbook #manifestation #2024goals",
+    "path": "/home/ubuntu/pinterest_pins/images/pin_goal-workbook.jpg"
+  },
+  {
+    "id": "meal-planner",
+    "name": "Meal Planner + Grocery List",
+    "board": "Printable Planners",
+    "price": "$5.99",
+    "tagline": "Plan meals, save time & money",
+    "hashtags": "#mealplanner #mealprep #grocerylist #healthyeating",
+    "path": "/home/ubuntu/pinterest_pins/images/pin_meal-planner.jpg"
+  },
+  {
+    "id": "journal-bundle",
+    "name": "Daily Journal + Gratitude Bundle",
+    "board": "Printable Planners",
+    "price": "$8.99",
+    "tagline": "Reflect, grow, and be grateful",
+    "hashtags": "#journaling #gratitudejournal #selfcare #mindfulness",
+    "path": "/home/ubuntu/pinterest_pins/images/pin_journal-bundle.jpg"
+  },
+  {
+    "id": "resume-bundle",
+    "name": "Resume Template Bundle",
+    "board": "Printable Templates & Invitations",
+    "price": "$14.99",
+    "tagline": "Land your dream job",
+    "hashtags": "#resumetemplate #jobsearch #careeradvice #getthejob",
+    "path": "/home/ubuntu/pinterest_pins/images/pin_resume-bundle.jpg"
+  },
+  {
+    "id": "social-calendar",
+    "name": "Social Media Content Calendar",
+    "board": "Digital Productivity & Organization",
+    "price": "$11.99",
+    "tagline": "Plan your content like a pro",
+    "hashtags": "#contentcalendar #socialmediatips #contentcreator #digitalmarketing",
+    "path": "/home/ubuntu/pinterest_pins/images/pin_social-calendar.jpg"
+  },
+  {
+    "id": "social-templates",
+    "name": "Instagram Post Templates",
+    "board": "Digital Productivity & Organization",
+    "price": "$19.99",
+    "tagline": "Stunning posts in minutes",
+    "hashtags": "#instagramtemplates #contentcreator #socialmedia #canvatemplates",
+    "path": "/home/ubuntu/pinterest_pins/images/pin_social-templates.jpg"
+  },
+  {
+    "id": "notion-template",
+    "name": "Notion Productivity Dashboard",
+    "board": "Digital Productivity & Organization",
+    "price": "$16.99",
+    "tagline": "Your ultimate Notion workspace",
+    "hashtags": "#notiontemplate #notionsetup #productivity #digitalplanner",
+    "path": "/home/ubuntu/pinterest_pins/images/pin_notion-template.jpg"
+  },
+  {
+    "id": "brand-kit",
+    "name": "Brand Identity Kit",
+    "board": "Digital Productivity & Organization",
+    "price": "$24.99",
+    "tagline": "Build a brand that stands out",
+    "hashtags": "#brandidentity #brandkit #smallbusiness #entrepreneur",
+    "path": "/home/ubuntu/pinterest_pins/images/pin_brand-kit.jpg"
+  },
+  {
+    "id": "business-card",
+    "name": "Business Card Template Pack",
+    "board": "Printable Templates & Invitations",
+    "price": "$7.99",
+    "tagline": "Make a lasting first impression",
+    "hashtags": "#businesscard #networking #printable #smallbusiness",
+    "path": "/home/ubuntu/pinterest_pins/images/pin_business-card.jpg"
+  },
+  {
+    "id": "wall-art-geometric",
+    "name": "Geometric Wall Art Set",
+    "board": "Printable Wall Art",
+    "price": "$9.99",
+    "tagline": "Modern art for every room",
+    "hashtags": "#wallart #geometricart #printablewallart #homedecor",
+    "path": "/home/ubuntu/pinterest_pins/images/pin_wall-art-geometric.jpg"
+  },
+  {
+    "id": "wall-art-quotes",
+    "name": "Typography Quote Prints",
+    "board": "Printable Wall Art",
+    "price": "$6.99",
+    "tagline": "Inspire your space with words",
+    "hashtags": "#quoteprint #wallquotes #inspirationalquotes #homedecor",
+    "path": "/home/ubuntu/pinterest_pins/images/pin_wall-art-quotes.jpg"
+  },
+  {
+    "id": "wedding-invite",
+    "name": "Wedding Invitation Suite",
+    "board": "Printable Templates & Invitations",
+    "price": "$29.99",
+    "tagline": "Your perfect wedding starts here",
+    "hashtags": "#weddinginvitation #weddingstationery #diywedding #weddingplanning",
+    "path": "/home/ubuntu/pinterest_pins/images/pin_wedding-invite.jpg"
+  },
+  {
+    "id": "party-invite",
+    "name": "Birthday Party Invitation Set",
+    "board": "Printable Templates & Invitations",
+    "price": "$5.99",
+    "tagline": "Make your party unforgettable",
+    "hashtags": "#birthdayinvitation #partyinvite #printableinvitation #kidsparty",
+    "path": "/home/ubuntu/pinterest_pins/images/pin_party-invite.jpg"
+  },
+  {
+    "id": "kids-activity",
+    "name": "Kids Activity Sheets Pack",
+    "board": "Printable Templates & Invitations",
+    "price": "$7.99",
+    "tagline": "Fun learning for little ones",
+    "hashtags": "#kidsactivities #printablesforkids #homeschool #learningathome",
+    "path": "/home/ubuntu/pinterest_pins/images/pin_kids-activity.jpg"
+  }
+]

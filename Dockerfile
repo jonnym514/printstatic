@@ -1,21 +1,17 @@
-FROM node:20-slim AS base
+FROM node:20-slim
 WORKDIR /app
 
-# Install pnpm
-RUN npm install -g pnpm@10
-
 # Copy package files
-COPY package.json pnpm-lock.yaml* ./
-COPY patches/ ./patches/
+COPY package.json ./
 
 # Install dependencies
-RUN pnpm install --frozen-lockfile || pnpm install
+RUN npm install
 
 # Copy source
 COPY . .
 
 # Build client + server
-RUN pnpm run build
+RUN npm run build
 
 # Production
 ENV NODE_ENV=production

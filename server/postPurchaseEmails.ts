@@ -1,214 +1,102 @@
 /**
  * Post-Purchase Email Helper
- * Extracted from the marketing router so the webhook can call it directly
- * without going through tRPC.
+ * Extracted from the marketing router so the webhook can call it
+ * without going through tRPC (webhooks don't have user sessions).
  */
 
-import { enqueueEmail, logAgentAction } from "./db";
-import { buildEmailHtml } from "./routers/marketing";
+import { db } from "./_core/db";
+import { emailQueue } from "./_core/schema";
 import { ALL_PRODUCTS } from "../shared/products";
 
-interface PostPurchaseInput {
-  orderId: number;
-  customerEmail: string;
-  customerName?: string;
-  productIds: string[];
-  downloadUrl: string;
+// ── Types ──────────────────────────────────────────────────────────────────────
+
+interface OrderItem {
+  productId: string;
+  quantity: number;
+  selectedColor?: string;
+  selectedStyle?: string;
 }
 
-export async function triggerPostPurchaseEmails(input: PostPurchaseInput): Promise<void> {
-  const name = input.customerName?.split(" ")[0] ?? "there";
-  const productNames = input.productIds
-    .map(id => ALL_PRODUCTS.find(p => p.id === id)?.name ?? id)
-    .join(", ");
+// ── Email Trigger ──────────────────────────────────────────────────────────────
 
-  const now = new Date();
-
-  // Email 1: Immediate download confirmation
-  await enqueueEmail({
-    toEmail: input.customerEmail,
-    toName: input.customerName ?? undefined,
-    emailType: "purchase_confirm",
-    subject: "\u2705 Your files are ready \u2014 Print Static",
-    htmlBody: buildEmailHtml({
-      title: "Your files are ready",
-      preheader: `Download your ${productNames} now`,
-      body: `<h2 style="margin:0 0 16px;font-size:24px;">Hi ${name}, your files are ready! \ud83c\udf89</h2>
-<p>Thank you for your purchase. Your download is waiting for you:</p>
-<p><strong>${productNames}</strong></p>
-<p>Click the button below to access your files. You can re-download them anytime from your Order History.</p>`,
-      ctaText: "Download Your Files \u2192",
-      ctaUrl: input.downloadUrl,
-    }),
-    orderId: input.orderId,
-    sendAt: now,
-  });
-
-  // Email 2: Tips & tricks (24 hours later)
-  const tips24h = new Date(now.getTime() + 24 * 60 * 60 * 1000);
-  await enqueueEmail({
-    toEmail: input.customerEmail,
-    toName: input.customerName ?? undefined,
-    emailType: "tips_followup",
-    subject: "\ud83d\udda8\ufe0f 5 tips for perfect home printing \u2014 Print Static",
-    htmlBody: buildEmailHtml({
-      title: "5 tips for perfect home printing",
-      preheader: "Get the best results from your new templates",
-      body: `<h2 style="margin:0 0 16px;font-size:22px;">Get the most from your templates</h2>
-<p>Hi ${name}! Here are 5 quick tips to get perfect prints every time:</p>
-<ol style="padding-left:20px;">
-  <li style="margin-bottom:10px;"><strong>Use "Fit to Page"</strong> in your print dialog to avoid cropping.</li>
-  <li style="margin-bottom:10px;"><strong>Print on 80\u201390gsm paper</strong> for crisp, professional results.</li>
-  <li style="margin-bottom:10px;"><strong>Select "Best Quality"</strong> in your printer settings for sharp text.</li>
-  <li style="margin-bottom:10px;"><strong>Use a PDF reader</strong> (Adobe Acrobat or Preview) rather than your browser for printing.</li>
-  <li style="margin-bottom:10px;"><strong>Print a test page first</strong> on plain paper before using premium stock.</li>
-</ol>
-<p>Need help? Reply to this email and we\u2019ll get back to you within 24 hours.</p>`,
-      ctaText: "Browse More Templates \u2192",
-      ctaUrl: "https://printstatic.com/shop",
-    }),
-    orderId: input.orderId,
-    sendAt: tips24h,
-  });
-
-  // Email 3: Upsell (3 days later)
-  const upsell3d = new Date(now.getTime() + 3 * 24 * 60 * 60 * 1000);
-  await enqueueEmail({
-    toEmail: input.customerEmail,
-    toName: input.customerName ?? undefined,
-    emailType: "upsell",
-    subject: "\ud83c\udf81 Customers who bought this also loved... \u2014 Print Static",
-    htmlBody: buildEmailHtml({
-      title: "You might also love these",
-      preheader: "Handpicked templates based on your purchase",
-      body: `<h2 style="margin:0 0 16px;font-size:22px;">Hi ${name}, here\u2019s what customers like you also love</h2>
-<p>Based on your recent purchase, we think you\u2019d love these:</p>
-<ul style="padding-left:20px;">
-  <li style="margin-bottom:10px;"><strong>Habit Tracker</strong> \u2014 Build better habits with our 30-day tracker</li>
-  <li style="margin-bottom:10px;"><strong>Budget Planner</strong> \u2014 Take control of your finances</li>
-  <li style="margin-bottom:10px;"><strong>Goal Workbook</strong> \u2014 Turn your goals into action plans</li>
-</ul>
-<p>All available as instant downloads. Use code <strong>RETURN10</strong> for 10% off your next order.</p>`,
-      ctaText: "Shop Now \u2192",
-      ctaUrl: "https://printstatic.com/shop",
-    }),
-    orderId: input.orderId,
-    sendAt: upsell3d,
-  });
-
-  await logAgentAction({
-    agentType: "marketing",
-    action: "post_purchase_sequence_queued",
-    payload: { orderId: input.orderId, email: input.customerEmail, emails: 3 },
-    status: "success",
-  });
-
-  console.log(`[PostPurchase] 3-email sequence queued for order #${input.orderId} (${input.customerEmail})`);
-}
 /**
- * Post-Purchase Email Helper
- * Extracted from the marketing router so the webhook can call it directly
- * without going through tRPC.
+ * Called by the Stripe webhook after a successful checkout.
+ * Enqueues three emails in the email_queue table:
+ *   1. Immediate download-confirmation email
+ *   2. 24-hour tips & tricks follow-up
+ *   3. 3-day upsell / review-request email
+ *
+ * The scheduler picks these up and sends them via Resend.
  */
-
-import { enqueueEmail, logAgentAction } from "./db";
-import { buildEmailHtml } from "./routers/marketing";
-import { ALL_PRODUCTS as products } from "../shared/products";
-
-interface PostPurchaseInput {
-  orderId: number;
-  customerEmail: string;
-  customerName?: string;
-  productIds: string[];
-  downloadUrl: string;
-}
-
-export async function triggerPostPurchaseEmails(input: PostPurchaseInput): Promise<void> {
-  const name = input.customerName?.split(" ")[0] ?? "there";
-  const productNames = input.productIds
-    .map(id => products.find(p => p.id === id)?.name ?? id)
+export async function triggerPostPurchaseEmails(
+  customerEmail: string,
+  customerName: string,
+  orderId: number,
+  items: OrderItem[],
+  downloadUrl: string
+) {
+  const productNames = items
+    .map((i) => {
+      const product = ALL_PRODUCTS.find((p) => p.id === i.productId);
+      return product?.name ?? i.productId;
+    })
     .join(", ");
 
   const now = new Date();
+  const in24h = new Date(now.getTime() + 24 * 60 * 60 * 1000);
+  const in3d = new Date(now.getTime() + 3 * 24 * 60 * 60 * 1000);
 
-  // Email 1: Immediate download confirmation
-  await enqueueEmail({
-    toEmail: input.customerEmail,
-    toName: input.customerName ?? undefined,
-    emailType: "purchase_confirm",
-    subject: "Your files are ready - Print Static",
-    htmlBody: buildEmailHtml({
-      title: "Your files are ready",
-      preheader: "Download your " + productNames + " now",
-      body: '<h2 style="margin:0 0 16px;font-size:24px;">Hi ' + name + ', your files are ready!</h2>'
-        + '<p>Thank you for your purchase. Your download is waiting for you:</p>'
-        + '<p><strong>' + productNames + '</strong></p>'
-        + '<p>Click the button below to access your files. You can re-download them anytime from your Order History.</p>',
-      ctaText: "Download Your Files",
-      ctaUrl: input.downloadUrl,
-    }),
-    orderId: input.orderId,
-    sendAt: now,
+  // Immediate: download confirmation
+  await db.insert(emailQueue).values({
+    toEmail: customerEmail,
+    subject: "Your Print Static order is ready!",
+    htmlBody: immediateEmail(customerName, productNames, downloadUrl),
+    scheduledFor: now,
   });
 
-  // Email 2: Tips & tricks (24 hours later)
-  const tips24h = new Date(now.getTime() + 24 * 60 * 60 * 1000);
-  await enqueueEmail({
-    toEmail: input.customerEmail,
-    toName: input.customerName ?? undefined,
-    emailType: "tips_followup",
-    subject: "5 tips for perfect home printing - Print Static",
-    htmlBody: buildEmailHtml({
-      title: "5 tips for perfect home printing",
-      preheader: "Get the best results from your new templates",
-      body: '<h2 style="margin:0 0 16px;font-size:22px;">Get the most from your templates</h2>'
-        + '<p>Hi ' + name + '! Here are 5 quick tips to get perfect prints every time:</p>'
-        + '<ol style="padding-left:20px;">'
-        + '<li style="margin-bottom:10px;"><strong>Use Fit to Page</strong> in your print dialog to avoid cropping.</li>'
-        + '<li style="margin-bottom:10px;"><strong>Print on 80-90gsm paper</strong> for crisp, professional results.</li>'
-        + '<li style="margin-bottom:10px;"><strong>Select Best Quality</strong> in your printer settings for sharp text.</li>'
-        + '<li style="margin-bottom:10px;"><strong>Use a PDF reader</strong> (Adobe Acrobat or Preview) rather than your browser for printing.</li>'
-        + '<li style="margin-bottom:10px;"><strong>Print a test page first</strong> on plain paper before using premium stock.</li>'
-        + '</ol>'
-        + '<p>Need help? Reply to this email and we will get back to you within 24 hours.</p>',
-      ctaText: "Browse More Templates",
-      ctaUrl: "https://printstatic.com/shop",
-    }),
-    orderId: input.orderId,
-    sendAt: tips24h,
+  // 24 hours later: tips & tricks
+  await db.insert(emailQueue).values({
+    toEmail: customerEmail,
+    subject: "Tips for getting the most out of your purchase",
+    htmlBody: tipsEmail(customerName, productNames),
+    scheduledFor: in24h,
   });
 
-  // Email 3: Upsell (3 days later)
-  const upsell3d = new Date(now.getTime() + 3 * 24 * 60 * 60 * 1000);
-  await enqueueEmail({
-    toEmail: input.customerEmail,
-    toName: input.customerName ?? undefined,
-    emailType: "upsell",
-    subject: "Customers who bought this also loved... - Print Static",
-    htmlBody: buildEmailHtml({
-      title: "You might also love these",
-      preheader: "Handpicked templates based on your purchase",
-      body: '<h2 style="margin:0 0 16px;font-size:22px;">Hi ' + name + ', here is what customers like you also love</h2>'
-        + '<p>Based on your recent purchase, we think you would love these:</p>'
-        + '<ul style="padding-left:20px;">'
-        + '<li style="margin-bottom:10px;"><strong>Habit Tracker</strong> - Build better habits with our 30-day tracker</li>'
-        + '<li style="margin-bottom:10px;"><strong>Budget Planner</strong> - Take control of your finances</li>'
-        + '<li style="margin-bottom:10px;"><strong>Goal Workbook</strong> - Turn your goals into action plans</li>'
-        + '</ul>'
-        + '<p>All available as instant downloads. Use code <strong>RETURN10</strong> for 10% off your next order.</p>',
-      ctaText: "Shop Now",
-      ctaUrl: "https://printstatic.com/shop",
-    }),
-    orderId: input.orderId,
-    sendAt: upsell3d,
+  // 3 days later: review request + upsell
+  await db.insert(emailQueue).values({
+    toEmail: customerEmail,
+    subject: "How are you enjoying your purchase?",
+    htmlBody: reviewEmail(customerName, productNames),
+    scheduledFor: in3d,
   });
+}
 
-  await logAgentAction({
-    agentType: "marketing",
-    action: "post_purchase_sequence_queued",
-    payload: { orderId: input.orderId, email: input.customerEmail, emails: 3 },
-    status: "success",
-  });
+// ── Email Templates (simple inline HTML) ──────────────────────────────────────
 
-  console.log("[PostPurchase] 3-email sequence queued for order #" + input.orderId + " (" + input.customerEmail + ")");
+function immediateEmail(name: string, products: string, downloadUrl: string) {
+  return "<h2>Hi " + name + "!</h2>" +
+    "<p>Thank you for your purchase from <strong>Print Static</strong>.</p>" +
+    "<p>You ordered: <strong>" + products + "</strong></p>" +
+    '<p><a href="' + downloadUrl + '" style="display:inline-block;padding:12px 24px;background:#00c4a7;color:#fff;border-radius:8px;text-decoration:none;font-weight:600;">Download Your Files</a></p>' +
+    '<p style="color:#888;font-size:13px;">This link expires in 7 days. You can always re-download from your account.</p>';
+}
+
+function tipsEmail(name: string, products: string) {
+  return "<h2>Hey " + name + "!</h2>" +
+    "<p>We hope you are enjoying <strong>" + products + "</strong>!</p>" +
+    "<p>Here are a few tips:</p>" +
+    "<ul>" +
+    "<li>Print at 300 DPI for the sharpest results</li>" +
+    "<li>Use thick cardstock for invitations and cards</li>" +
+    '<li>Check out our <a href="https://printstatic.com/blog">blog</a> for design inspiration</li>' +
+    "</ul>" +
+    "<p>Happy creating!</p>";
+}
+
+function reviewEmail(name: string, products: string) {
+  return "<h2>Hi " + name + "!</h2>" +
+    "<p>How are you enjoying <strong>" + products + "</strong>?</p>" +
+    "<p>We would love to hear your thoughts - reviews help other creators discover Print Static.</p>" +
+    '<p><a href="https://printstatic.com/shop" style="display:inline-block;padding:12px 24px;background:#6366f1;color:#fff;border-radius:8px;text-decoration:none;font-weight:600;">Leave a Review</a></p>' +
+    "<p>Looking for more? Check out our latest bundles and save up to 50%!</p>";
 }

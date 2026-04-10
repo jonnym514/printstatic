@@ -81,14 +81,14 @@ export const products: Product[] = extendedProducts;
 
 // -- Categories ---------------------------------------------------------------
 
-export const categories: string[] = [
-  "All",
-  "Planners",
-  "Templates",
-  "Wall Art",
-  "Invitations",
-  "Kids",
-  "Bundles",
+export const categories: { id: string; label: string }[] = [
+  { id: "All", label: "All" },
+  { id: "Planners", label: "Planners" },
+  { id: "Templates", label: "Templates" },
+  { id: "Wall Art", label: "Wall Art" },
+  { id: "Invitations", label: "Invitations" },
+  { id: "Kids", label: "Kids" },
+  { id: "Bundles", label: "Bundles" },
 ];
 
 // -- Filter Functions ---------------------------------------------------------

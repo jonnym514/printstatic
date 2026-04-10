@@ -10,17 +10,13 @@ export interface Product {
   id: string;
   name: string;
   price: number;
+  salePrice?: number;
   category: string;
   image: string;
-  badge?: string;
   description: string;
-  longDescription: string;
-  fileFormat: string;
-  pages: number;
-  rating: number;
-  downloads: number;
-  tags: string[];
   colorVariants?: ColorVariant[];
+  styleVariants?: { id: string; label: string }[];
+  styleImages?: Record<string, string>;
 }
 
 export interface CartItem {
@@ -122,3 +118,4 @@ export function useCart() {
   if (!ctx) throw new Error("useCart must be used within CartProvider");
   return ctx;
 }
+

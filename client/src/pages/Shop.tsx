@@ -17,8 +17,8 @@ import {
 } from "@/lib/products";
 
 export default function Shop() {
-  const [activeCategory, setActiveCategory] = useState("all");
-  const [activeStyle, setActiveStyle] = useState("all");
+  const [activeCategory, setActiveCategory] = useState("All");
+  const [activeStyle, setActiveStyle] = useState("All");
 
   const byCategory = getProductsByCategory(activeCategory);
   const filtered = getProductsByStyle(byCategory, activeStyle);
@@ -135,7 +135,7 @@ export default function Shop() {
               // no files match this filter combination
             </p>
             <button
-              onClick={() => { setActiveCategory("all"); setActiveStyle("all"); }}
+              onClick={() => { setActiveCategory("All"); setActiveStyle("All"); }}
               className="mt-4 text-xs text-primary underline underline-offset-2"
               style={{ fontFamily: "'Space Mono', monospace" }}
             >

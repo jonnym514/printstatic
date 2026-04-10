@@ -138,3 +138,11 @@ export const stripeRouter = router({
       stripeSessionId: o.stripeSessionId,
       productIds: o.productIds as string[],
       amountTotal: o.amountTotal,
+      currency: o.currency,
+      status: o.status,
+      customerEmail: o.customerEmail,
+      customerName: o.customerName,
+      createdAt: o.createdAt,
+    }));
+  }),
+});

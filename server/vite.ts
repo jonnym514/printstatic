@@ -2,7 +2,7 @@
  * Vite integration for the Express server.
  *
  * Development: creates a Vite dev server as middleware (HMR, fast refresh).
- * Production: serves the pre-built static files from client/dist.
+ * Production: serves the pre-built static files from dist/public.
  */
 
 import type { Express } from "express";
@@ -41,7 +41,7 @@ export async function setupVite(app: Express, server: Server) {
 }
 
 export function serveStatic(app: Express) {
-  const distPath = path.resolve("client/dist");
+  const distPath = path.resolve("dist/public");
 
   app.use(express.static(distPath));
 

@@ -14,7 +14,7 @@ import {
   type ColorVariant,
 } from "../../../shared/products";
 
-// ── Style Variant Type ─────────────────────────────────────────────────────────
+// ── Style Variant Type ─────────────────────────────────────────────────────────────
 
 export type StyleVariant = {
   id: string;
@@ -23,16 +23,23 @@ export type StyleVariant = {
 
 export { type ColorVariant } from "../../../shared/products";
 
-// ── Extended Product Type ──────────────────────────────────────────────────────
+// ── Extended Product Type ──────────────────────────────────────────────────────────
 
 export interface Product extends ProductCatalogItem {
   colorVariants?: ColorVariant[];
   styleVariants?: StyleVariant[];
   styleImages?: Record<string, string>;
   image: string;
+  badge?: string;
+  longDescription: string;
+  fileFormat: string;
+  pages: number;
+  rating: number;
+  downloads: number;
+  tags: string[];
 }
 
-// ── Style Filters ──────────────────────────────────────────────────────────────
+// ── Style Filters ────────────────────────────────────────────────────────────────
 
 export const styleFilters: StyleVariant[] = [
   { id: "All", label: "All Styles" },
@@ -43,28 +50,50 @@ export const styleFilters: StyleVariant[] = [
 
 // ── Extend products with client data ───────────────────────────────────────────
 
+// ── Default metadata per category ─────────────────────────────────────────────
+
+const categoryDefaults: Record<string, { fileFormat: string; pages: number; tags: string[] }> = {
+  Planners:    { fileFormat: "PDF", pages: 12, tags: ["planner", "printable", "productivity"] },
+  Templates:   { fileFormat: "PDF + Canva", pages: 8, tags: ["template", "editable", "design"] },
+  "Wall Art":  { fileFormat: "PDF + PNG", pages: 6, tags: ["wall art", "printable", "decor"] },
+  Invitations: { fileFormat: "PDF + Canva", pages: 4, tags: ["invitation", "editable", "event"] },
+  Kids:        { fileFormat: "PDF", pages: 30, tags: ["kids", "activity", "educational"] },
+  Bundles:     { fileFormat: "PDF + Canva", pages: 20, tags: ["bundle", "value pack", "collection"] },
+};
+
 const extendedProducts = [...PRODUCT_CATALOG, ...BUNDLE_CATALOG].map(
-  (item): Product => ({
-    ...item,
-    // Main image path
-    image: `/api/placeholder/${item.name}/${item.category}`,
-    // Color variants (if applicable)
-    colorVariants: item.variants,
-    // Style variants for template/design products
-    styleVariants: ["resume-bundle", "social-templates", "business-card", "brand-kit", "wedding-invite"].includes(item.id)
-      ? styleFilters.filter((s) => s.id !== "All")
-      : undefined,
-    // Style-specific images for template/design products
-    styleImages: ["resume-bundle", "social-templates", "business-card", "brand-kit", "wedding-invite"].includes(
-      item.id
-    )
-      ? {
-          minimal: `/api/placeholder/${item.name}/minimal`,
-          bold: `/api/placeholder/${item.name}/bold`,
-          creative: `/api/placeholder/${item.name}/creative`,
-        }
-      : undefined,
-  })
+  (item): Product => {
+    const defaults = categoryDefaults[item.category] ?? { fileFormat: "PDF", pages: 8, tags: [item.category.toLowerCase()] };
+    return {
+      ...item,
+      // Main image path
+      image: `/api/placeholder/${item.name}/${item.category}`,
+      // Color variants (if applicable)
+      colorVariants: item.variants,
+      // Style variants for template/design products
+      styleVariants: ["resume-bundle", "social-templates", "business-card", "brand-kit", "wedding-invite"].includes(item.id)
+        ? styleFilters.filter((s) => s.id !== "All")
+        : undefined,
+      // Style-specific images for template/design products
+      styleImages: ["resume-bundle", "social-templates", "business-card", "brand-kit", "wedding-invite"].includes(
+        item.id
+      )
+        ? {
+            minimal: `/api/placeholder/${item.name}/minimal`,
+            bold: `/api/placeholder/${item.name}/bold`,
+            creative: `/api/placeholder/${item.name}/creative`,
+          }
+        : undefined,
+      // Default metadata for ProductCard compatibility
+      longDescription: item.description,
+      fileFormat: defaults.fileFormat,
+      pages: defaults.pages,
+      rating: 4.8,
+      // Deterministic download count based on product id hash
+      downloads: 1200 + (item.id.split("").reduce((a, c) => a + c.charCodeAt(0), 0) * 37) % 3800,
+      tags: defaults.tags,
+    };
+  }
 );
 
 export const products: Product[] = extendedProducts;
@@ -81,7 +110,7 @@ export const categories: string[] = [
   "Bundles",
 ];
 
-// ── Filter Functions ──────────────────────────────────────────────────────────
+// ── Filter Functions ────────────────────────────────────────────────────────────
 
 /**
  * Filter products by category

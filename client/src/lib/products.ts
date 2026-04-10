@@ -14,7 +14,7 @@ import {
   type ColorVariant,
 } from "../../../shared/products";
 
-// ── Style Variant Type ─────────────────────────────────────────────────────────────
+// ââ Style Variant Type âââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 
 export type StyleVariant = {
   id: string;
@@ -23,7 +23,7 @@ export type StyleVariant = {
 
 export { type ColorVariant } from "../../../shared/products";
 
-// ── Extended Product Type ──────────────────────────────────────────────────────────
+// ââ Extended Product Type ââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 
 export interface Product extends ProductCatalogItem {
   colorVariants?: ColorVariant[];
@@ -32,7 +32,7 @@ export interface Product extends ProductCatalogItem {
   image: string;
 }
 
-// ── Style Filters ────────────────────────────────────────────────────────────────
+// ââ Style Filters ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 
 export const styleFilters: StyleVariant[] = [
   { id: "All", label: "All Styles" },
@@ -41,27 +41,27 @@ export const styleFilters: StyleVariant[] = [
   { id: "creative", label: "Creative" },
 ];
 
-// ── Extend products with client data ─────────────────────────────────────────────────
+// ââ Extend products with client data âââââââââââââââââââââââââââââââââââââââââââ
 
 const extendedProducts = [...PRODUCT_CATALOG, ...BUNDLE_CATALOG].map(
   (item): Product => ({
     ...item,
-    // Main image path — uses generated SVG placeholders
-    image: `/api/placeholder/${encodeURIComponent(item.name)}/${encodeURIComponent(item.category)}`,
+    // Main image path
+    image: `/attached_assets/products/${item.id}.jpg`,
     // Color variants (if applicable)
     colorVariants: item.variants,
-    // Style variants for some products
-    styleVariants: ["minimal", "bold", "creative"].includes(item.id)
+    // Style variants for template/design products
+    styleVariants: ["resume-bundle", "social-templates", "business-card", "brand-kit", "wedding-invite"].includes(item.id)
       ? styleFilters.filter((s) => s.id !== "All")
       : undefined,
     // Style-specific images for template/design products
-    styleImages: ["resume-bundle", "social-templates", "business-card"].includes(
+    styleImages: ["resume-bundle", "social-templates", "business-card", "brand-kit", "wedding-invite"].includes(
       item.id
     )
       ? {
-          minimal: `/api/placeholder/${encodeURIComponent(item.name + " \u2014 Minimal")}/${encodeURIComponent(item.category)}`,
-          bold: `/api/placeholder/${encodeURIComponent(item.name + " \u2014 Bold")}/${encodeURIComponent(item.category)}`,
-          creative: `/api/placeholder/${encodeURIComponent(item.name + " \u2014 Creative")}/${encodeURIComponent(item.category)}`,
+          minimal: `/api/placeholder/${item.name}/minimal`,
+          bold: `/api/placeholder/${item.name}/bold`,
+          creative: `/api/placeholder/${item.name}/creative`,
         }
       : undefined,
   })
@@ -69,19 +69,19 @@ const extendedProducts = [...PRODUCT_CATALOG, ...BUNDLE_CATALOG].map(
 
 export const products: Product[] = extendedProducts;
 
-// ── Categories ───────────────────────────────────────────────────────────────────
+// ââ Categories âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 
-export const categories: { id: string; label: string }[] = [
-  { id: "All", label: "All" },
-  { id: "Planners", label: "Planners" },
-  { id: "Templates", label: "Templates" },
-  { id: "Wall Art", label: "Wall Art" },
-  { id: "Invitations", label: "Invitations" },
-  { id: "Kids", label: "Kids" },
-  { id: "Bundles", label: "Bundles" },
+export const categories: string[] = [
+  "All",
+  "Planners",
+  "Templates",
+  "Wall Art",
+  "Invitations",
+  "Kids",
+  "Bundles",
 ];
 
-// ── Filter Functions ──────────────────────────────────────────────────────────────
+// ââ Filter Functions ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 
 /**
  * Filter products by category

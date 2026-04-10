@@ -1,3 +1,4 @@
+/*
  * Stripe tRPC Router
  * - createCheckout: creates a Stripe Checkout Session for a cart of products
  * - getOrders: returns the current user's order history

@@ -14,7 +14,7 @@ import {
   type ColorVariant,
 } from "../../../shared/products";
 
-// ââ Style Variant Type âââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+// ── Style Variant Type ─────────────────────────────────────────────────────────
 
 export type StyleVariant = {
   id: string;
@@ -23,7 +23,7 @@ export type StyleVariant = {
 
 export { type ColorVariant } from "../../../shared/products";
 
-// ââ Extended Product Type ââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+// ── Extended Product Type ──────────────────────────────────────────────────────
 
 export interface Product extends ProductCatalogItem {
   colorVariants?: ColorVariant[];
@@ -32,7 +32,7 @@ export interface Product extends ProductCatalogItem {
   image: string;
 }
 
-// ââ Style Filters ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+// ── Style Filters ──────────────────────────────────────────────────────────────
 
 export const styleFilters: StyleVariant[] = [
   { id: "All", label: "All Styles" },
@@ -41,13 +41,13 @@ export const styleFilters: StyleVariant[] = [
   { id: "creative", label: "Creative" },
 ];
 
-// ââ Extend products with client data âââââââââââââââââââââââââââââââââââââââââââ
+// ── Extend products with client data ───────────────────────────────────────────
 
 const extendedProducts = [...PRODUCT_CATALOG, ...BUNDLE_CATALOG].map(
   (item): Product => ({
     ...item,
     // Main image path
-    image: `/attached_assets/products/${item.id}.jpg`,
+    image: `/api/placeholder/${item.name}/${item.category}`,
     // Color variants (if applicable)
     colorVariants: item.variants,
     // Style variants for template/design products
@@ -69,7 +69,7 @@ const extendedProducts = [...PRODUCT_CATALOG, ...BUNDLE_CATALOG].map(
 
 export const products: Product[] = extendedProducts;
 
-// ââ Categories âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+// ── Categories ─────────────────────────────────────────────────────────────────
 
 export const categories: string[] = [
   "All",
@@ -81,7 +81,7 @@ export const categories: string[] = [
   "Bundles",
 ];
 
-// ââ Filter Functions ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
+// ── Filter Functions ──────────────────────────────────────────────────────────
 
 /**
  * Filter products by category

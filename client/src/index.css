@@ -1,4 +1,4 @@
-   Print Static — Design System
+/* Print Static — Design System
    Philosophy: Clean White Studio / Digital Editorial
    Colors: Pure white base, ink black accents, electric cyan highlights
    Typography: Space Grotesk (display) + Inter (body) + Space Mono (labels)
@@ -51,29 +51,36 @@
 
 :root {
   --radius: 0.25rem;
-
-  /* Electric cyan — the single bold accent */
   --primary: oklch(0.55 0.18 195);
   --primary-foreground: oklch(1.0 0 0);
-
-  /* Pure white background */
   --background: oklch(0.99 0.002 240);
   --foreground: oklch(0.10 0.01 240);
-
-  /* Cards: white with subtle shadow */
   --card: oklch(1.0 0 0);
   --card-foreground: oklch(0.10 0.01 240);
-
   --popover: oklch(1.0 0 0);
   --popover-foreground: oklch(0.10 0.01 240);
-
-  /* Secondary: near-black for contrast sections */
   --secondary: oklch(0.10 0.01 240);
   --secondary-foreground: oklch(0.97 0.002 240);
-
-  /* Muted: light gray for backgrounds */
   --muted: oklch(0.95 0.004 240);
   --muted-foreground: oklch(0.45 0.01 240);
-
-  /* Accent: light cyan tint for hover states */
   --accent: oklch(0.94 0.04 195);
+  --accent-foreground: oklch(0.10 0.01 240);
+  --destructive: oklch(0.55 0.2 25);
+  --destructive-foreground: oklch(1.0 0 0);
+  --border: oklch(0.90 0.004 240);
+  --input: oklch(0.90 0.004 240);
+  --ring: oklch(0.55 0.18 195);
+  --chart-1: oklch(0.55 0.18 195);
+  --chart-2: oklch(0.65 0.15 160);
+  --chart-3: oklch(0.55 0.12 250);
+  --chart-4: oklch(0.65 0.18 80);
+  --chart-5: oklch(0.55 0.18 320);
+  --sidebar: oklch(0.97 0.004 240);
+  --sidebar-foreground: oklch(0.10 0.01 240);
+  --sidebar-primary: oklch(0.55 0.18 195);
+  --sidebar-primary-foreground: oklch(1.0 0 0);
+  --sidebar-accent: oklch(0.94 0.04 195);
+  --sidebar-accent-foreground: oklch(0.10 0.01 240);
+  --sidebar-border: oklch(0.90 0.004 240);
+  --sidebar-ring: oklch(0.55 0.18 195);
+}

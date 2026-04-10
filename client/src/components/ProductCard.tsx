@@ -9,7 +9,7 @@ import { Product } from "@/contexts/CartContext";
 import { useCart } from "@/contexts/CartContext";
 import { toast } from "sonner";
 
-const MAX_SWATCHES = 6; // max dots to show before "+N more" overflow
+const MAX_SWATCHES = 6;
 
 interface ProductCardProps {
   product: Product;
@@ -43,14 +43,12 @@ export default function ProductCard({ product, animationDelay = 0, liveStats }: 
             alt={product.name}
             className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
           />
-          {/* Subtle overlay on hover */}
           <div className="absolute inset-0 bg-foreground/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
           {product.badge && (
             <div className="absolute top-3 left-3">
               <span className="badge-cyan">{product.badge}</span>
             </div>
           )}
-          {/* File type indicator */}
           <div
             className="absolute bottom-3 right-3 px-2 py-0.5 bg-white/95 border border-border rounded-sm text-xs text-primary font-bold"
             style={{ fontFamily: "'Space Mono', monospace" }}
@@ -88,13 +86,13 @@ export default function ProductCard({ product, animationDelay = 0, liveStats }: 
             {product.description}
           </p>
 
-          {/* Stats row */}
+          {/* Info row */}
           <div className="flex items-center justify-between mb-3">
             <span
               className="text-xs text-muted-foreground"
               style={{ fontFamily: "'Space Mono', monospace" }}
             >
-              ★ {liveStats && liveStats.count > 0 ? liveStats.avg.toFixed(1) : product.rating} · {liveStats && liveStats.count > 0 ? `${liveStats.count} review${liveStats.count !== 1 ? "s" : ""}` : `${product.downloads.toLocaleString()} downloads`}
+              {liveStats && liveStats.count > 0 ? `★ ${liveStats.avg.toFixed(1)} · ${liveStats.count} review${liveStats.count !== 1 ? "s" : ""}` : "PDF · print_ready"}
             </span>
             <span className="text-xs text-primary/70" style={{ fontFamily: "'Space Mono', monospace" }}>
               instant_dl

@@ -25,7 +25,7 @@ import {
 } from "../db";
 import { products } from "../../client/src/lib/products";
 
-// ─── Email HTML builder ───────────────────────────────────────────────────────
+// âââ Email HTML builder âââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 
 export function buildEmailHtml(opts: {
   title: string;
@@ -66,7 +66,7 @@ export function buildEmailHtml(opts: {
       <tr>
         <td style="background:#f9f9f9;padding:20px 32px;border-top:1px solid #e8e8e8;">
           <p style="margin:0;font-size:12px;color:#888;text-align:center;">
-            © ${new Date().getFullYear()} Print Static · Premium Digital Downloads<br>
+            Â© ${new Date().getFullYear()} Print Static Â· Premium Digital Downloads<br>
             <a href="https://printstatic.com" style="color:#00c4a7;text-decoration:none;">printstatic.com</a>
           </p>
         </td>
@@ -78,7 +78,7 @@ export function buildEmailHtml(opts: {
 </html>`;
 }
 
-// ─── Router ───────────────────────────────────────────────────────────────────
+// âââ Router âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ
 
 export const marketingRouter = {
 
@@ -107,15 +107,15 @@ export const marketingRouter = {
         toEmail: input.customerEmail,
         toName: input.customerName ?? undefined,
         emailType: "purchase_confirm",
-        subject: "✅ Your files are ready — Print Static",
+        subject: "â Your files are ready â Print Static",
         htmlBody: buildEmailHtml({
           title: "Your files are ready",
           preheader: `Download your ${productNames} now`,
-          body: `<h2 style="margin:0 0 16px;font-size:24px;">Hi ${name}, your files are ready! 🎉</h2>
+          body: `<h2 style="margin:0 0 16px;font-size:24px;">Hi ${name}, your files are ready! ð</h2>
 <p>Thank you for your purchase. Your download is waiting for you:</p>
 <p><strong>${productNames}</strong></p>
 <p>Click the button below to access your files. You can re-download them anytime from your Order History.</p>`,
-          ctaText: "Download Your Files →",
+          ctaText: "Download Your Files â",
           ctaUrl: input.downloadUrl,
         }),
         orderId: input.orderId,
@@ -128,7 +128,7 @@ export const marketingRouter = {
         toEmail: input.customerEmail,
         toName: input.customerName ?? undefined,
         emailType: "tips_followup",
-        subject: "🖨️ 5 tips for perfect home printing — Print Static",
+        subject: "ð¨ï¸ 5 tips for perfect home printing â Print Static",
         htmlBody: buildEmailHtml({
           title: "5 tips for perfect home printing",
           preheader: "Get the best results from your new templates",
@@ -136,13 +136,13 @@ export const marketingRouter = {
 <p>Hi ${name}! Here are 5 quick tips to get perfect prints every time:</p>
 <ol style="padding-left:20px;">
   <li style="margin-bottom:10px;"><strong>Use "Fit to Page"</strong> in your print dialog to avoid cropping.</li>
-  <li style="margin-bottom:10px;"><strong>Print on 80–90gsm paper</strong> for crisp, professional results.</li>
+  <li style="margin-bottom:10px;"><strong>Print on 80â90gsm paper</strong> for crisp, professional results.</li>
   <li style="margin-bottom:10px;"><strong>Select "Best Quality"</strong> in your printer settings for sharp text.</li>
   <li style="margin-bottom:10px;"><strong>Use a PDF reader</strong> (Adobe Acrobat or Preview) rather than your browser for printing.</li>
   <li style="margin-bottom:10px;"><strong>Print a test page first</strong> on plain paper before using premium stock.</li>
 </ol>
 <p>Need help? Reply to this email and we'll get back to you within 24 hours.</p>`,
-          ctaText: "Browse More Templates →",
+          ctaText: "Browse More Templates â",
           ctaUrl: "https://printstatic.com/shop",
         }),
         orderId: input.orderId,
@@ -155,19 +155,19 @@ export const marketingRouter = {
         toEmail: input.customerEmail,
         toName: input.customerName ?? undefined,
         emailType: "upsell",
-        subject: "🎁 Customers who bought this also loved... — Print Static",
+        subject: "ð Customers who bought this also loved... â Print Static",
         htmlBody: buildEmailHtml({
           title: "You might also love these",
           preheader: "Handpicked templates based on your purchase",
           body: `<h2 style="margin:0 0 16px;font-size:22px;">Hi ${name}, here's what customers like you also love</h2>
 <p>Based on your recent purchase, we think you'd love these:</p>
 <ul style="padding-left:20px;">
-  <li style="margin-bottom:10px;"><strong>Habit Tracker</strong> — Build better habits with our 30-day tracker</li>
-  <li style="margin-bottom:10px;"><strong>Budget Planner</strong> — Take control of your finances</li>
-  <li style="margin-bottom:10px;"><strong>Goal Workbook</strong> — Turn your goals into action plans</li>
+  <li style="margin-bottom:10px;"><strong>Habit Tracker</strong> â Build better habits with our 30-day tracker</li>
+  <li style="margin-bottom:10px;"><strong>Budget Planner</strong> â Take control of your finances</li>
+  <li style="margin-bottom:10px;"><strong>Goal Workbook</strong> â Turn your goals into action plans</li>
 </ul>
 <p>All available as instant downloads. Use code <strong>RETURN10</strong> for 10% off your next order.</p>`,
-          ctaText: "Shop Now →",
+          ctaText: "Shop Now â",
           ctaUrl: "https://printstatic.com/shop",
         }),
         orderId: input.orderId,
@@ -185,7 +185,7 @@ export const marketingRouter = {
     }),
 
   /**
-   * Process the email queue — send all emails whose sendAt has passed.
+   * Process the email queue â send all emails whose sendAt has passed.
    * Designed to be called by a cron job every 5 minutes.
    * Uses the Manus owner notification as the email transport (no external SMTP needed).
    */
@@ -195,11 +195,36 @@ export const marketingRouter = {
       let sent = 0;
       let failed = 0;
 
+      const resendApiKey = process.env.RESEND_API_KEY;
+
       for (const email of pending) {
         try {
-          // Use the built-in notification system to deliver emails
-          // In production this would use SendGrid/Mailchimp SMTP
-          // For now we log and mark as sent so the queue drains correctly
+          // Send via Resend API if configured
+          if (resendApiKey && email.toEmail) {
+            const res = await fetch("https://api.resend.com/emails", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${resendApiKey}`,
+              },
+              body: JSON.stringify({
+                from: "Print Static <orders@printstatic.com>",
+                to: email.toEmail,
+                subject: email.subject,
+                html: email.htmlBody,
+              }),
+            });
+
+            if (!res.ok) {
+              const errText = await res.text().catch(() => res.statusText);
+              throw new Error(`Resend API ${res.status}: ${errText}`);
+            }
+
+            console.log(`[EmailQueue] Sent "${email.subject}" to ${email.toEmail}`);
+          } else {
+            console.log(`[EmailQueue] No RESEND_API_KEY â skipping send for "${email.subject}" to ${email.toEmail}`);
+          }
+
           await logAgentAction({
             agentType: "marketing",
             action: "email_sent",
@@ -213,6 +238,7 @@ export const marketingRouter = {
           await markEmailSent(email.id);
           sent++;
         } catch (e: any) {
+          console.error(`[EmailQueue] Failed to send "${email.subject}" to ${email.toEmail}:`, e.message);
           await markEmailFailed(email.id, e.message);
           failed++;
         }
@@ -342,7 +368,7 @@ Write a 3-paragraph digest: (1) performance summary, (2) what's working, (3) 2-3
       const digestContent = String(response.choices[0]?.message?.content ?? "Weekly digest unavailable.");
 
       await notifyOwner({
-        title: `📊 Weekly Digest — ${last7.length} orders, $${(weekRevenue / 100).toFixed(2)} revenue`,
+        title: `ð Weekly Digest â ${last7.length} orders, $${(weekRevenue / 100).toFixed(2)} revenue`,
         content: digestContent,
       });
 

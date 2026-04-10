@@ -4,6 +4,46 @@
  * without going through tRPC.
  */
 
+
+import { enqueueEmail, logAgentAction } from "./db";
+import { buildEmailHtml } from "./routers/marketing";
+import { ALL_PRODUCTS as products } from "../shared/products";
+
+
+interface PostPurchaseInput {
+  orderId: number;
+  customerEmail: string;
+  customerName?: string;
+  productIds: string[];
+  downloadUrl: string;
+}
+
+
+export async function triggerPostPurchaseEmails(input: PostPurchaseInput): Promise<void> {
+  const name = input.customerName?.split(" ")[0] ?? "there";
+  const productNames = input.productIds
+    .map(id => products.find(p => p.id === id)?.name ?? id)
+    .join(", ");
+
+
+  const now = new Date();
+
+
+  // Email 1: Immediate download confirmation
+  await enqueueEmail({
+    toEmail: input.customerEmail,
+    toName: input.customerName ?? undefined,
+    emailType: "purchase_confirm",
+    subject: "✅ Your files are ready — Print Static",
+    htmlBody: buildEmailHtml({
+      title: "Your files are ready",
+      preheader: `Download your ${productNames} now`,
+      body: `<h2 style="margin:0 0 16px;font-size:24px;">Hi ${name}, your files are ready! 🎉</h2>/**
+ * Post-Purchase Email Helper
+ * Extracted from the marketing router so the webhook can call it directly
+ * without going through tRPC.
+ */
+
 import { enqueueEmail, logAgentAction } from "./db";
 import { buildEmailHtml } from "./routers/marketing";
 import { products } from "../../client/src/lib/products";

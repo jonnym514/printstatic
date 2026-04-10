@@ -1,4 +1,4 @@
- * PixelPrintables — Marketing Agent Dashboard
+/* * PixelPrintables — Marketing Agent Dashboard
  * Philosophy: Scandinavian Minimalism / Clean Boutique
  * The command center for the automated marketing agent.
  * Shows: platform setup, content queue, approval workflow, analytics overview

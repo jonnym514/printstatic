@@ -262,7 +262,7 @@ export default function ProductDetail() {
                     ? `${product.name} — ${product.styleVariants?.find((s: StyleVariant) => s.id === selectedStyle)?.label}`
                     : product.name
                 }
-                className="w-full h-auto object-cover transition-opacity duration-300"
+                className="w-full max-h-[500px] object-contain transition-opacity duration-300"
               />
               {/* Color label badge */}
               {selectedColor && !activePreview && (

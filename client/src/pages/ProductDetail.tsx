@@ -717,7 +717,7 @@ export default function ProductDetail() {
             <h2 className="text-3xl font-bold text-foreground mb-8" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
               You Might Also Like
             </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className={`grid grid-cols-1 gap-6 ${related.length === 1 ? "" : related.length === 2 ? "md:grid-cols-2" : "md:grid-cols-2 lg:grid-cols-3"}`}>
               {related.map((p, i) => (
                 <ProductCard key={p.id} product={p} animationDelay={i * 100} />
               ))}

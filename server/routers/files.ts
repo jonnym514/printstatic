@@ -1,37 +1,31 @@
 /**
- * Files tRPC Router
- * - uploadFile: admin-only — upload a PDF to S3 and register it for a product
- * - getFilesForProduct: admin-only — list all files for a product
- * - getAllFiles: admin-only — list all uploaded files across all products
- * - deleteFile: admin-only — remove a file from S3 and the database
- * - getDownloadLinks: protected — get time-limited download URLs for purchased products
+ * Files Router — FIX for missing download-link endpoints
+ *
+ * This file replaces/extends the existing routers/files.ts to add:
+ * 1. getDownloadLinksForSession — public endpoint for the OrderSuccess page
+ * 2. getDownloadLinks — protected endpoint for Order History page
+ *
+ * Location on server: server/routers/files.ts
  */
 
-import { TRPCError } from "@trpc/server";
 import { z } from "zod";
-import { protectedProcedure, publicProcedure, router } from "../_core/trpc";
+import { adminProcedure, protectedProcedure, publicProcedure, router } from "../_core/trpc";
 import { storagePut, storageGet } from "../storage";
 import {
   insertProductFile,
   getFilesByProductId,
   getAllProductFiles,
   deleteProductFile,
-  getOrdersByUserId,
   getOrderBySessionId,
+  getOrdersByUserId,
+  getOrdersByEmail,
 } from "../db";
-
-// Admin guard middleware
-const adminProcedure = protectedProcedure.use(({ ctx, next }) => {
-  if (ctx.user.role !== "admin") {
-    throw new TRPCError({ code: "FORBIDDEN", message: "Admin access required" });
-  }
-  return next({ ctx });
-});
+import { getProductById } from "../../shared/products";
 
 export const filesRouter = router({
+
   /**
-   * Admin: Upload a PDF file for a product.
-   * Accepts base64-encoded file data from the frontend.
+   * Admin: Upload a file for a product (base64 encoded).
    */
   uploadFile: adminProcedure
     .input(
@@ -44,18 +38,13 @@ export const filesRouter = router({
       })
     )
     .mutation(async ({ ctx, input }) => {
-      // Decode base64 to buffer
       const buffer = Buffer.from(input.fileData, "base64");
-
-      // Generate a unique S3 key with random suffix to prevent enumeration
       const timestamp = Date.now();
       const safeName = input.fileName.replace(/[^a-zA-Z0-9._-]/g, "_");
       const s3Key = `product-files/${input.productId}/${timestamp}-${safeName}`;
 
-      // Upload to S3
       await storagePut(s3Key, buffer, input.mimeType);
 
-      // Save metadata to database
       await insertProductFile({
         productId: input.productId,
         fileName: input.fileName,
@@ -78,117 +67,172 @@ export const filesRouter = router({
     }),
 
   /**
-   * Admin: Get all uploaded files across all products.
+   * Admin: Get all files across all products.
    */
   getAllFiles: adminProcedure.query(async () => {
     return getAllProductFiles();
   }),
 
   /**
-   * Admin: Delete a file from S3 and the database.
+   * Admin: Delete a product file by ID.
    */
   deleteFile: adminProcedure
-    .input(z.object({ id: z.number() }))
+    .input(z.object({ fileId: z.number() }))
     .mutation(async ({ input }) => {
-      await deleteProductFile(input.id);
+      await deleteProductFile(input.fileId);
       return { success: true };
     }),
 
-  /**
-   * Protected: Get secure time-limited download URLs for all files
-   * belonging to products the current user has purchased.
-   * Validates ownership before returning any URL.
-   */
-  getDownloadLinks: protectedProcedure
-    .input(
-      z.object({
-        productIds: z.array(z.string()),
-      })
-    )
-    .query(async ({ ctx, input }) => {
-      // Verify the user actually purchased these products
-      const userOrders = await getOrdersByUserId(ctx.user.id);
-      const purchasedProductIds = new Set<string>();
-      for (const order of userOrders) {
-        const ids = order.productIds as string[];
-        ids.forEach((id) => purchasedProductIds.add(id));
-      }
-
-      // Filter to only products the user has purchased
-      const authorizedProductIds = input.productIds.filter((id) =>
-        purchasedProductIds.has(id)
-      );
-
-      if (authorizedProductIds.length === 0) {
-        return [];
-      }
-
-      // Get files for all authorized products
-      const results: {
-        productId: string;
-        fileId: number;
-        fileName: string;
-        downloadUrl: string;
-      }[] = [];
-
-      for (const productId of authorizedProductIds) {
-        const files = await getFilesByProductId(productId);
-        for (const file of files) {
-          const { url } = await storageGet(file.s3Key);
-          results.push({
-            productId,
-            fileId: file.id,
-            fileName: file.fileName,
-            downloadUrl: url,
-          });
-        }
-      }
-
-      return results;
-    }),
+  // ─── PUBLIC: Download links for OrderSuccess page ─────────────────────────
 
   /**
-   * Public: Get download links by Stripe session ID — no login required.
-   * The session_id itself is the proof of payment. We look up the order
-   * in our database (created by the webhook) and return presigned S3 URLs
-   * for all purchased files. This lets customers download immediately after
-   * checkout without needing to be logged in.
+   * Get download links for a completed checkout session.
+   * Called by the OrderSuccess page after Stripe redirects back.
+   * Public because the customer may not be logged in (guest checkout).
+   * The session_id acts as a proof-of-purchase token.
    */
   getDownloadLinksForSession: publicProcedure
     .input(z.object({ sessionId: z.string().min(1) }))
     .query(async ({ input }) => {
-      // Look up the order created by the Stripe webhook
+      // Look up the order by Stripe session ID
       const order = await getOrderBySessionId(input.sessionId);
       if (!order) {
-        // Order may not have been created yet (webhook delay) — return empty
-        return { ready: false, files: [] };
+        // Order not yet created by webhook — frontend will poll/retry
+        return { ready: false, downloads: [] };
       }
 
-      const productIds = order.productIds as string[];
-      if (!productIds || productIds.length === 0) {
-        return { ready: true, files: [] };
+      // Parse product IDs from the order
+      let productIds: string[] = [];
+      try {
+        productIds = typeof order.productIds === "string"
+          ? JSON.parse(order.productIds)
+          : (order.productIds ?? []);
+      } catch {
+        productIds = [];
       }
 
-      const files: {
-        productId: string;
-        fileId: number;
-        fileName: string;
-        downloadUrl: string;
-      }[] = [];
-
-      for (const productId of productIds) {
-        const productFiles = await getFilesByProductId(productId);
-        for (const file of productFiles) {
-          const { url } = await storageGet(file.s3Key);
-          files.push({
-            productId,
-            fileId: file.id,
-            fileName: file.fileName,
-            downloadUrl: url,
-          });
-        }
+      if (productIds.length === 0) {
+        return { ready: true, downloads: [] };
       }
 
-      return { ready: true, files };
+      // Generate signed download URLs for each product's files
+      const downloads = await generateDownloadLinks(productIds);
+
+      return { ready: true, downloads };
     }),
+
+  // ─── PROTECTED: Download links for Order History page ─────────────────────
+
+  /**
+   * Get download links for all orders belonging to the logged-in user.
+   * Used on the Order History / My Downloads page.
+   */
+  getDownloadLinks: protectedProcedure.query(async ({ ctx }) => {
+    const userId = ctx.user.id;
+    const userEmail = ctx.user.email;
+
+    // Get orders by user ID, fall back to email lookup
+    let userOrders = await getOrdersByUserId(userId);
+    if (userOrders.length === 0 && userEmail) {
+      userOrders = await getOrdersByEmail(userEmail);
+    }
+
+    if (userOrders.length === 0) {
+      return [];
+    }
+
+    // Build a response per order with download links
+    const result = await Promise.all(
+      userOrders.map(async (order) => {
+        let productIds: string[] = [];
+        try {
+          productIds = typeof order.productIds === "string"
+            ? JSON.parse(order.productIds)
+            : (order.productIds ?? []);
+        } catch {
+          productIds = [];
+        }
+
+        const downloads = await generateDownloadLinks(productIds);
+
+        return {
+          orderId: order.id,
+          stripeSessionId: order.stripeSessionId,
+          createdAt: order.createdAt,
+          amountTotal: order.amountTotal,
+          currency: order.currency,
+          status: order.status,
+          downloads,
+        };
+      })
+    );
+
+    return result;
+  }),
 });
+
+// ─── Helper: Generate signed download URLs for a list of product IDs ────────
+
+interface DownloadLink {
+  productId: string;
+  productName: string;
+  fileName: string;
+  mimeType: string;
+  fileSize: number;
+  downloadUrl: string;
+}
+
+async function generateDownloadLinks(productIds: string[]): Promise<DownloadLink[]> {
+  const downloads: DownloadLink[] = [];
+
+  for (const productId of productIds) {
+    const product = getProductById(productId);
+    const files = await getFilesByProductId(productId);
+
+    for (const file of files) {
+      try {
+        const { url } = await storageGet(file.s3Key);
+        downloads.push({
+          productId,
+          productName: product?.name ?? productId,
+          fileName: file.fileName,
+          mimeType: file.mimeType ?? "application/pdf",
+          fileSize: file.fileSize ?? 0,
+          downloadUrl: url,
+        });
+      } catch (err) {
+        console.error(`[Files] Failed to generate download URL for ${file.s3Key}:`, err);
+      }
+    }
+  }
+
+  return downloads;
+}
+
+/**
+ * Exported for use by the webhook handler to generate a download page URL.
+ * Returns the first download URL for a list of product IDs, or a fallback
+ * to the order-success page.
+ */
+export async function getFirstDownloadUrl(
+  productIds: string[],
+  fallbackSessionId?: string
+): Promise<string> {
+  for (const productId of productIds) {
+    const files = await getFilesByProductId(productId);
+    if (files.length > 0) {
+      try {
+        const { url } = await storageGet(files[0].s3Key);
+        return url;
+      } catch {
+        // continue to next
+      }
+    }
+  }
+
+  // Fallback: link to order success page where they can re-download
+  if (fallbackSessionId) {
+    return `https://printstatic.com/order-success?session_id=${fallbackSessionId}`;
+  }
+  return "https://printstatic.com/orders";
+}
